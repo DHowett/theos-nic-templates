@@ -1,0 +1,52 @@
+nic 1
+name "iphone/sbsettingstoggle"
+file 28 Toggle.mm
+// Required
+extern "C" BOOL isCapable() {
+	return YES;
+}
+
+// Required
+extern "C" BOOL isEnabled() {
+	return YES;
+}
+
+// Optional
+// Faster isEnabled. Remove this if it's not necessary. Keep it if isEnabled() is expensive and you can make it faster here.
+extern "C" BOOL getStateFast() {
+	return YES;
+}
+
+// Required
+extern "C" void setState(BOOL enabled) {
+	// Set State!
+}
+
+// Required
+// How long the toggle takes to toggle, in seconds.
+extern "C" float getDelayTime() {
+	return 0.1f;
+}
+
+// vim:ft=objc
+
+file 7 Makefile
+include theos/makefiles/common.mk
+
+LIBRARY_NAME = Toggle
+Toggle_FILES = Toggle.mm
+Toggle_INSTALL_PATH = /var/mobile/Library/SBSettings/Toggles/@@PROJECTNAME@@
+
+include $(THEOS_MAKE_PATH)/library.mk
+
+file 9 control
+Package: @@PACKAGENAME@@
+Name: @@FULLPROJECTNAME@@
+Depends: sbsettings
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome SBSetting toggle!
+Maintainer: @@USER@@
+Author: @@USER@@
+Section: Addons (SBSettings)
+
