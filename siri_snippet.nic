@@ -442,10 +442,10 @@ file 9 control
 Package: @@PACKAGENAME@@
 Name: @@FULLPROJECTNAME@@
 Depends: firmware (>= 5.0), gsc.assistant | com.chpwn.spire, me.k3a.ae
-Version: 1.0.0
+Version: 0.0.1
 Architecture: iphoneos-arm
 Description: An awesome snippet extension for the Siri powered by AssistantExtensions!
 Maintainer: @@USER@@
 Author: @@USER@@
-Section: Addons (Siri)
+Section: Addons (AssistantExtensions)
 
