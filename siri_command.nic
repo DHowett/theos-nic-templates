@@ -1,5 +1,7 @@
 nic 1
 name "iphone/siri_command"
+prompt AEWEBSITE "Extension/author website" "ae.k3a.me"
+prompt AEDESCRIPTION "Description of the extension" "An awesome extension for Siri!"
 dir Resources
 file 37 Resources/Info.plist
 <?xml version="1.0" encoding="UTF-8"?>
@@ -87,11 +89,11 @@ file 40 AE@@PROJECTNAME@@.mm
 }
 -(NSString*)description
 {
-	return @"Another awesome Siri extension.";
+	return @"@@AEDESCRIPTION@@";
 }
 -(NSString*)website
 {
-	return @"ae.k3a.me";
+	return @"@@AEWEBSITE@@";
 }
 -(NSString*)versionRequirement
 {
@@ -374,7 +376,7 @@ Name: @@FULLPROJECTNAME@@
 Depends: firmware (>= 5.0), gsc.assistant | com.chpwn.spire, me.k3a.ae
 Version: 0.0.1
 Architecture: iphoneos-arm
-Description: An awesome extension for the Siri powered by AssistantExtensions!
+Description: @@AEDESCRIPTION@@
 Maintainer: @@USER@@
 Author: @@USER@@
 Section: Addons (AssistantExtensions)
