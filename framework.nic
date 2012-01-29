@@ -1,0 +1,52 @@
+nic 1
+name "iphone/framework"
+dir Resources
+file 22 Resources/Info.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>@@PROJECTNAME@@</string>
+	<key>CFBundleIdentifier</key>
+	<string>@@PACKAGENAME@@</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>FMWK</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+</dict>
+</plist>
+
+file 2 @@PROJECTNAME@@.mm
+
+// vim:ft=objc
+
+file 7 Makefile
+include theos/makefiles/common.mk
+
+FRAMEWORK_NAME = @@PROJECTNAME@@
+@@PROJECTNAME@@_FILES = @@PROJECTNAME@@.mm
+@@PROJECTNAME@@_INSTALL_PATH = /Library/Frameworks
+
+include $(THEOS_MAKE_PATH)/framework.mk
+
+file 10 control
+Package: @@PACKAGENAME@@
+Name: @@FULLPROJECTNAME@@
+Depends: 
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome framework of some sort!!
+Maintainer: @@USER@@
+Author: @@USER@@
+Section: System
+Tag: role::developer
+
