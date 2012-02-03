@@ -69,7 +69,7 @@ include theos/makefiles/common.mk
 
 BUNDLE_NAME = @@PROJECTNAME@@
 @@PROJECTNAME@@_FILES = @@PROJECTNAME@@Controller.m
-@@PROJECTNAME@@_INSTALL_PATH = /System/Library/WeeAppPlugins/
+@@PROJECTNAME@@_INSTALL_PATH = /Library/WeeLoader/Plugins
 @@PROJECTNAME@@_FRAMEWORKS = UIKit CoreGraphics
 
 include $(THEOS_MAKE_PATH)/bundle.mk
@@ -80,7 +80,7 @@ after-install::
 file 9 control
 Package: @@PACKAGENAME@@
 Name: @@FULLPROJECTNAME@@
-Depends: firmware (>= 5.0), com.saurik.substrate.safemode
+Depends: firmware (>= 5.0), com.saurik.substrate.safemode, com.chpwn.weeloader
 Version: 0.0.1
 Architecture: iphoneos-arm
 Description: An awesome widget for the notification center!
