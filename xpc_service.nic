@@ -1,0 +1,165 @@
+nic 1
+name ""
+dir client
+dir layout
+dir layout/DEBIAN
+dir layout/Library
+dir layout/Library/LaunchDaemons
+file 2 layout/DEBIAN/prerm
+#!/bin/sh
+launchctl unload /Library/LaunchDaemons/@@PACKAGENAME@@.plist
+
+file 53 main.m
+#include <xpc/xpc.h>
+
+int main(int argc, char **argv, char **envp) {
+
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+    // Attempt to create the server, exit if fails
+    xpc_connection_t connection = xpc_connection_create_mach_service("@@PACKAGENAME@@", NULL, XPC_CONNECTION_MACH_SERVICE_LISTENER);
+    if (!connection) {
+        NSLog(@"Failed to create XPC server. Exiting.");
+        [pool release];
+        return 0;
+    }
+
+    // Configure event handler
+    xpc_connection_set_event_handler(connection, ^(xpc_object_t object) {
+        xpc_type_t type = xpc_get_type(object);
+        if (type == XPC_TYPE_CONNECTION) {
+            NSLog(@"XPC server received incoming connection: %s", xpc_copy_description(object));
+
+            /**
+             * This handler is simply a stub
+             *
+             * The connection should instead be passed to a controller object where
+             * the controller can set it's own event handler and then resume the connection
+            **/
+            xpc_connection_set_event_handler(object, ^(xpc_object_t some_object) {
+                NSLog(@"XPC connection received object: %s", xpc_copy_description(some_object));
+                xpc_object_t reply = xpc_dictionary_create_reply(some_object);
+                if (reply) {
+                    xpc_dictionary_set_string(reply, "message", "Pong");
+                    NSLog(@"XPC connection sending reply: %s", xpc_copy_description(reply));
+                    xpc_connection_send_message(xpc_dictionary_get_remote_connection(some_object), reply);
+                }
+            });
+            xpc_connection_resume(object);
+        } else if (type == XPC_TYPE_ERROR) {
+            NSLog(@"XPC server error: %s", xpc_dictionary_get_string(object, XPC_ERROR_KEY_DESCRIPTION));
+        } else {
+            NSLog(@"XPC server received unknown object: %s", xpc_copy_description(object));
+        }
+    });
+
+    // Make connection live
+    xpc_connection_resume(connection);
+
+    // Execute run loop
+    [[NSRunLoop currentRunLoop] run];
+
+    [pool release];
+
+    return 0;
+}
+
+file 2 layout/DEBIAN/postinst
+#!/bin/sh
+launchctl load /Library/LaunchDaemons/@@PACKAGENAME@@.plist
+
+file 20 client/main.m
+#include <xpc/xpc.h>
+
+int main(int argc, char **argv, char **envp) {
+    // Create connection to mach service
+    xpc_connection_t connection = xpc_connection_create_mach_service("@@PACKAGENAME@@", NULL, 0);
+    xpc_connection_set_event_handler(connection, ^(xpc_object_t some_object) { });
+    xpc_connection_resume(connection);
+
+    while (true) {
+        // Send message to mach service, and wait for a response
+        xpc_object_t object = xpc_dictionary_create(NULL, NULL, 0);
+        xpc_dictionary_set_string(object, "message", "Ping");
+        printf("Sending object: %s\n", xpc_copy_description(object));
+        xpc_object_t reply = xpc_connection_send_message_with_reply_sync(connection, object);
+        printf("Received reply object: %s\n\n", xpc_copy_description(reply));
+        sleep(1);
+    }
+
+    return 0;
+}
+
+file 19 layout/Library/LaunchDaemons/@@PACKAGENAME@@.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>@@PACKAGENAME@@</string>
+	<key>MachServices</key>
+	<dict>
+		<key>@@PACKAGENAME@@</key>
+		<true/>
+	</dict>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/@@PROJECTNAME@@</string>
+	</array>
+	<key>UserName</key>
+	<string>mobile</string>
+</dict>
+</plist>
+
+file 9 layout/DEBIAN/control
+Package: @@PACKAGENAME@@
+Name: @@FULLPROJECTNAME@@
+Depends:
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome XPC service!
+Maintainer: @@USER@@
+Author: @@USER@@
+Section: System
+
+file 10 client/control
+Package: xpcclient
+Name: XPC Client
+Depends:
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome XPC service client!
+Maintainer: @@USER@@
+Author: @@USER@@
+Section: System
+Tag: role::hacker
+
+file 15 Makefile
+include theos/makefiles/common.mk
+
+TOOL_NAME = @@PROJECTNAME@@
+@@PROJECTNAME@@_FILES = main.m
+
+include $(THEOS_MAKE_PATH)/tool.mk
+
+after-@@PROJECTNAME@@-stage::
+	$(ECHO_NOTHING)$(FAKEROOT) chown root:wheel $(THEOS_STAGING_DIR)/Library/LaunchDaemons/@@PACKAGENAME@@.plist$(ECHO_END)
+
+all::
+	$(ECHO_NOTHING)chmod 755 $(THEOS_PROJECT_DIR)/layout/DEBIAN/prerm$(ECHO_END)
+	$(ECHO_NOTHING)chmod 755 $(THEOS_PROJECT_DIR)/layout/DEBIAN/preinst$(ECHO_END)
+	$(ECHO_NOTHING)chmod 755 $(THEOS_PROJECT_DIR)/layout/DEBIAN/postinst$(ECHO_END)
+	$(ECHO_NOTHING)sed -i '' '10,$$d' $(THEOS_PROJECT_DIR)/Makefile$(ECHO_END)
+
+file 6 client/Makefile
+include ../theos/makefiles/common.mk
+
+TOOL_NAME = xpcclient
+xpcclient_FILES = main.m
+
+include $(THEOS_MAKE_PATH)/tool.mk
+
+file 2 layout/DEBIAN/preinst
+#!/bin/sh
+launchctl unload /Library/LaunchDaemons/@@PACKAGENAME@@.plist 2>&1 > /dev/null
+
