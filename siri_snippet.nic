@@ -1,0 +1,453 @@
+nic 1
+name "iphone/siri_snippet"
+prompt AEWEBSITE "Extension/author website" "ae.k3a.me"
+prompt AEDESCRIPTION "Description of the extension" "An awesome snippet extension for Siri!"
+dir Resources
+file 37 Resources/Info.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>@@PROJECTNAME@@</string>
+	<key>CFBundleIdentifier</key>
+	<string>@@PACKAGENAME@@</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>CFBundleDisplayName</key>
+	<string>@@PROJECTNAME@@</string>
+	<key>MinimumOSVersion</key>
+	<string>5.0</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>iPhoneOS</string>
+	</array>
+	<key>CFBundlePackageType</key>
+	<string>BNDL</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>AppBundleID</key>
+	<string>@@PACKAGENAME@@</string>
+	<key>UIDeviceFamily</key>
+	<array>
+		<integer>1</integer>
+		<integer>2</integer>
+	</array>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>NSPrincipalClass</key>
+	<string>AE@@PROJECTNAME@@</string>
+</dict>
+</plist>
+
+file 1 Resources/InfoPlist.strings
+"@@PROJECTNAME@@" = "@@FULLPROJECTNAME@@";
+
+file 14 AE@@PROJECTNAME@@.h
+#import "SiriObjects.h"
+
+/// Principal class - the main class of the extension
+@interface AE@@PROJECTNAME@@ : NSObject<SEExtension>
+
+-(id)initWithSystem:(id<SESystem>)system;
+
+-(NSString*)author;
+-(NSString*)name;
+-(NSString*)description;
+-(NSString*)website;
+
+@end
+// vim:ft=objc
+
+file 42 AE@@PROJECTNAME@@.mm
+#import "AE@@PROJECTNAME@@.h"
+#import "AE@@PROJECTNAME@@Commands.h"
+#import "AE@@PROJECTNAME@@Snippet.h"
+
+@implementation AE@@PROJECTNAME@@
+
+// required initialization
+-(id)initWithSystem:(id<SESystem>)system
+{
+	if ( (self = [super init]) )
+	{
+		// register all extension classes provided
+		[system registerCommand:[AE@@PROJECTNAME@@Commands class]];
+		[system registerSnippet:[AE@@PROJECTNAME@@Snippet class]];
+	}
+	return self;
+}
+
+// optional info about extension
+-(NSString*)author
+{
+	return @"@@USER@@";
+}
+-(NSString*)name
+{
+	return @"@@FULLPROJECTNAME@@";
+}
+-(NSString*)description
+{
+	return @"@@AEDESCRIPTION@@";
+}
+-(NSString*)website
+{
+	return @"@@AEWEBSITE@@";
+}
+-(NSString*)versionRequirement
+{
+	return @"1.0.1";
+}
+
+@end
+// vim:ft=objc
+
+file 8 AE@@PROJECTNAME@@Commands.h
+#import "SiriObjects.h"
+
+@interface AE@@PROJECTNAME@@Commands : NSObject<SECommand>
+
+-(BOOL)handleSpeech:(NSString*)text tokens:(NSArray*)tokens tokenSet:(NSSet*)tokenset context:(id<SEContext>)ctx;
+
+@end
+// vim:ft=objc
+
+file 56 AE@@PROJECTNAME@@Commands.mm
+#import "AE@@PROJECTNAME@@Commands.h"
+
+@implementation AE@@PROJECTNAME@@Commands
+
+-(id)init
+{
+	if ( (self = [super init]) )
+	{
+		// additional initialization
+	}
+	return self;
+}
+
+-(void)dealloc
+{
+	// additional cleaning
+	[super dealloc];
+}
+
+-(BOOL)handleSpeech:(NSString*)text tokens:(NSArray*)tokens tokenSet:(NSSet*)tokenset context:(id<SEContext>)ctx
+{
+	// logging useful during development
+	// NSLog(@">> AE@@PROJECTNAME@@Commands handleSpeech: %@", text);
+
+	// react to recognized tokens (what happen or what happened)
+	if ([tokens count] == 1 && [tokenset containsObject:@"snippet"])
+	{
+		// properties for the snippet (optional)
+		NSDictionary* snipProps = [NSDictionary dictionaryWithObject:@"It's working!" forKey:@"text"];
+
+		// create an array of views
+		NSMutableArray* views = [NSMutableArray arrayWithCapacity:1];
+		[views addObject:[ctx createAssistantUtteranceView:@"This is a custom snippet:"]];
+		[views addObject:[ctx createSnippet:@"AE@@PROJECTNAME@@Snippet" properties:snipProps]];
+
+		// send views to the assistant
+		[ctx sendAddViews:views];
+
+		// alternatively, for utterance response, you can use this call only:
+		//[ctx sendAddViewsUtteranceView:@"Hello Snippet!!"];
+		// alternatively, for snippet response you can use this call only:
+		//[ctx sendAddViewsSnippet:@"K3AHelloSnippet" properties:snipProps];
+
+		// Inform the assistant that this is end of the request
+		// For more complex extensions, you can spawn an additional thread and process request asynchronly,
+		// ending with sending "request completed"
+		[ctx sendRequestCompleted];
+
+		return YES; // the command has been handled by our extension (ignore the original one from the server)
+	}
+
+	return NO;
+}
+
+@end
+// vim:ft=objc
+
+file 12 AE@@PROJECTNAME@@Snippet.h
+#import "SiriObjects.h"
+
+@interface AE@@PROJECTNAME@@Snippet : NSObject<SESnippet> {
+	UIView* _view;
+	UILabel* _testLabel;
+}
+
+- (id)initWithProperties:(NSDictionary*)props;
+- (id)view;
+
+@end
+// vim:ft=objc
+
+file 42 AE@@PROJECTNAME@@Snippet.mm
+#import "AE@@PROJECTNAME@@Snippet.h"
+
+@implementation AE@@PROJECTNAME@@Snippet
+
+- (id)view
+{
+	return _view;
+}
+
+- (void)dealloc
+{
+	// DON'T FORGET TO RELEASE ALL ALLOCATED/RETAINED MEMORY/OBJECTS
+	//NSLog(@">> AE@@PROJECTNAME@@Snippet dealloc");
+
+	[_view release];
+	[super dealloc];
+}
+
+- (id)initWithProperties:(NSDictionary*)props;
+{
+	//NSLog(@">> AE@@PROJECTNAME@@Snippet initWithProperties: %@", props);
+
+	if ( (self = [super init]) )
+	{
+		// create a background view (the height matters)
+		CGRect bgSize = CGRectMake(0,0, 310,40); // 310 is a standard snippet width
+		_view = [[UIView alloc] initWithFrame:bgSize];
+
+		_testLabel = [[UILabel alloc] initWithFrame:bgSize];
+		_testLabel.backgroundColor = [UIColor clearColor];
+		_testLabel.textColor = [UIColor whiteColor];
+		_testLabel.textAlignment = UITextAlignmentCenter;
+		[_testLabel setText:[props objectForKey:@"text"]]; // text supplied by AE@@PROJECTNAME@@Commands
+
+		[_view addSubview:_testLabel];
+		[_testLabel release];
+	}
+	return self;
+}
+
+@end
+// vim:ft=objc
+
+file 193 SiriObjects.h
+//
+//  SiriObjects.h
+//  AssistantExtensions
+//  Version 1.0.1
+//
+//  Created by K3A.
+//  Copyright (c) 2012 K3A.me. All rights reserved.
+//
+#pragma once
+#include <Foundation/Foundation.h>
+
+#ifdef SC_PRIVATE
+# import "SiriObjects_private.h"
+#endif
+
+/// Ordinary assistant object dictionary (NSMutableDictionary) containing class name, group and properties.
+typedef NSMutableDictionary SOObject;
+/// Root assistant object (NSMutableDictionary). Like SOObject but with aceId and refId properties.
+typedef SOObject SOAceObject;
+
+@protocol SECommand;
+
+
+/// Protocol specifying methods of context passed via handleSpeech to the class conforming to SECommand
+@protocol SEContext <NSObject>
+@required
+/** Creates a dictionary representing an ordinary assistant object
+ \param className Name of the class
+ \param group Name of the object group
+ \param props Properties of the object
+ */
+-(SOObject*)createObjectDict:(NSString*)className group:(NSString*)group properties:(NSDictionary*)props;
+
+/** Creates a dictionary representing utterance view
+ \param text A text to show and speak
+ */
+-(SOObject*)createAssistantUtteranceView:(NSString*)text;
+/** Creates a dictionary representing utterance view
+ \param text A text to show
+ \param speakableText A text to speak
+ */
+-(SOObject*)createAssistantUtteranceView:(NSString*)text speakableText:(NSString*)speakableText;
+/** Creates a dictionary representing utterance view
+ \param text A text to show
+ \param speakableText A text to speak
+ \param dialogIdentifier Dialog identifier
+ */
+-(SOObject*)createAssistantUtteranceView:(NSString*)text speakableText:(NSString*)speakableText dialogIdentifier:(NSString*)dialogIdentifier;
+/** Creates a dictionary representing a snippet
+ \param snippetClass Name of the snippet class
+ \param props Dictionary of snippet properties
+ */
+-(SOObject*)createSnippet:(NSString*)snippetClass properties:(NSDictionary*)props;
+
+/** Sends a root assistant object 
+ */
+-(BOOL)sendAceObject:(NSString*)className group:(NSString*)group properties:(NSDictionary*)props;
+
+/** Sends "request completed" to the assistant
+ */
+-(BOOL)sendRequestCompleted;
+
+/** Sends views to the assistant
+ \param views Array of views to send
+ */
+-(BOOL)sendAddViews:(NSArray*)views;
+/** Sends views to the assistant
+ \param views Array of views to send
+ \param dialogPhase Dialog phase, e.g. Reflection (will be replaced), Completion, Summary, Clarification, Error, Acknowledgement
+ \param scrollToTop Should scroll to top
+ \param temporary Temporary flag
+ */
+-(BOOL)sendAddViews:(NSArray*)views dialogPhase:(NSString*)dialogPhase scrollToTop:(BOOL)scrollToTop temporary:(BOOL)temporary;
+
+/** Create a snippet and send it immediately
+ \param snippetClass Name of the snippet class
+ \param props Properties for the snippet class
+ */
+-(BOOL)sendAddViewsSnippet:(NSString*)snippetClass properties:(NSDictionary*)props;
+/** Create a snippet and send it immediately
+ \param snippetClass Name of the snippet class
+ \param properties Properties for the snippet class
+ \param dialogPhase Dialog phase, e.g. Reflection (will be replaced), Completion, Summary, Clarification, Error, Acknowledgement
+ \param scrollToTop Should scroll to top
+ \param temporary Temporary flag
+ */
+-(BOOL)sendAddViewsSnippet:(NSString*)snippetClass properties:(NSDictionary*)props dialogPhase:(NSString*)dialogPhase scrollToTop:(BOOL)scrollToTop temporary:(BOOL)temporary;
+
+/** Create utterance (text) and send it immediately
+ \param text Text to send
+ */
+-(BOOL)sendAddViewsUtteranceView:(NSString*)text;
+/** Create utterance (text) and send it immediately
+ \param text Text to send
+ \param speakableText Text to speak (different from what is displayed)
+ */
+-(BOOL)sendAddViewsUtteranceView:(NSString*)text speakableText:(NSString*)speakableText;
+/** Create utterance (text) and send it immediately
+ \param text Text to send
+ \param speakableText Text to speak (different from what is displayed)
+ \param dialogPhase Dialog phase, e.g. Reflection (will be replaced), Completion, Summary, Clarification, Error, Acknowledgement
+ */
+-(BOOL)sendAddViewsUtteranceView:(NSString*)text speakableText:(NSString*)speakableText dialogPhase:(NSString*)dialogPhase scrollToTop:(BOOL)scrollToTop temporary:(BOOL)temporary;
+/** Create utterance (text) and send it immediately
+ \param text Text to send
+ \param speakableText Text to speak (different from what is displayed)
+ \param dialogPhase Dialog phase, e.g. Reflection (will be replaced), Completion, Summary, Clarification, Error, Acknowledgement
+ */
+-(BOOL)sendAddViewsUtteranceView:(NSString*)text speakableText:(NSString*)speakableText dialogPhase:(NSString*)dialogPhase scrollToTop:(BOOL)scrollToTop temporary:(BOOL)temporary;
+/** Create utterance (text) and send it immediately
+ \param text Text to send
+ \param speakableText Text to speak (different from what is displayed)
+ \param dialogPhase Dialog phase, e.g. Reflection (will be replaced), Completion, Summary, Clarification, Error, Acknowledgement
+ \param listen Whether to listen for user response just after speaking the text. If YES, next request will be sent to the same SECommand.
+ \since 1.0.1
+ */
+-(BOOL)sendAddViewsUtteranceView:(NSString*)text speakableText:(NSString*)speakableText dialogPhase:(NSString*)dialogPhase scrollToTop:(BOOL)scrollToTop temporary:(BOOL)temporary listenAfterSpeaking:(BOOL)listen; //SINCE 1.0.1
+
+/** Returns a boolean indicating whether the current request has been completed (by calling sendRequestCompleted). */
+-(BOOL)requestHasCompleted;
+
+/** Returns an object which handled the request or nil if the request has not been handled yet. */
+-(NSObject<SECommand>*)object;
+
+/** Returns a string with refId of the current request. */
+-(NSString*)refId;
+
+@end
+
+/** Protocol specifying methods of an extension class representing snippet.
+	Instances of these classes will be created for every snippet creation request.
+	A class representing snippet can derive from UIView or just represent some proxy class creating it's UIView on demand.
+	Don't forget you really should prefix your class with some shortcut, e.g. K3AAwesomeSnippet!
+ */
+@protocol SESnippet <NSObject>
+@required
+/// Initializes a snippet by properties 
+-(id)initWithProperties:(NSDictionary*)props;
+/// Returns a view representing snippet, can be self if the conforming class is already UIView
+-(id)view;
+
+@end
+
+/** Protocol specifying methods of an extension class handling commands.
+	Classes conforming to this protocol are initialized just after loading bundle and will remain in memory.
+	Don't forget you really should prefix your class with some shortcut, e.g. K3AAwesomeCommand!
+ */
+@protocol SECommand <NSObject>
+@required
+/** Allows the extension to react to recognized text.
+	\param text Recognized text
+	\param tokens An ordered array of lowercase tokens representing recognized words
+	\param tokenset An unordered set of tokens for fast search - recommended parameter for keyword-matching
+	\param ctx Context representing the current request also allowing to send responses
+ */
+-(BOOL)handleSpeech:(NSString*)text tokens:(NSArray*)tokens tokenSet:(NSSet*)tokenset context:(id<SEContext>)ctx;
+
+@end
+
+
+/** Protocol specifying methods for the NSPrincipal class of the extension.
+ */
+@protocol SESystem <NSObject>
+@required
+/// Register a command class
+-(BOOL)registerCommand:(Class)cls;
+/// Register a snippet class
+-(BOOL)registerSnippet:(Class)cls;
+/// Returns the version string of AssistantExtensions
+-(NSString*)systemVersion; //SINCE 1.0.1
+@end
+
+/// Protocol specifying methods of the extension's principal class
+@protocol SEExtension <NSObject>
+
+@required
+/// The first method which is called on your class, system is where you register commands and snippets
+-(id)initWithSystem:(id<SESystem>)system;
+
+@optional
+/// Extension author
+-(NSString*)author;
+/// Extension name
+-(NSString*)name;
+/// Extension description
+-(NSString*)description;
+/// Extension website URL
+-(NSString*)website;
+/// Minimal SiriExtensions version requirement
+-(NSString*)versionRequirement; //SINCE 1.0.1
+
+@end
+// vim:ft=objc
+
+file 12 Makefile
+include theos/makefiles/common.mk
+
+BUNDLE_NAME = @@PROJECTNAME@@
+@@PROJECTNAME@@_BUNDLE_EXTENSION = assistantExtension
+@@PROJECTNAME@@_FILES = AE@@PROJECTNAME@@.mm AE@@PROJECTNAME@@Commands.mm AE@@PROJECTNAME@@Snippet.mm
+@@PROJECTNAME@@_INSTALL_PATH = /Library/AssistantExtensions/
+@@PROJECTNAME@@_FRAMEWORKS = UIKit CoreGraphics
+
+include $(THEOS_MAKE_PATH)/bundle.mk
+
+after-install::
+	install.exec "killall -9 SpringBoard"
+
+file 9 control
+Package: @@PACKAGENAME@@
+Name: @@FULLPROJECTNAME@@
+Depends: firmware (>= 5.0), gsc.assistant | com.chpwn.spire, me.k3a.ae
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: @@AEDESCRIPTION@@
+Maintainer: @@USER@@
+Author: @@USER@@
+Section: Addons (AssistantExtensions)
+
