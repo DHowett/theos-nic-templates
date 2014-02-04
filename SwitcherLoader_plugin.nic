@@ -1,0 +1,71 @@
+nic 1
+name "iphone/SwitcherLoader_plugin"
+dir Resources
+file 32 Resources/Info.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>@@PROJECTNAME@@</string>
+	<key>CFBundleIdentifier</key>
+	<string>@@PACKAGENAME@@</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>BNDL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+	<key>DTPlatformName</key>
+	<string>iphoneos</string>
+	<key>MinimumOSVersion</key>
+	<string>4.0</string>
+	<key>NSPrincipalClass</key>
+	<string>@@PROJECTNAME@@_view</string>
+	<key>name</key>
+	<string>@@PROJECTNAME@@</string>
+    <key>icon</key>
+    <string>@@PROJECTNAME.png</string>
+</dict>
+</plist>
+file 15 @@PROJECTNAME@@.mm
+@interface @@PROJECTNAME@@_view : UIView
+
+@end
+@implementation @@PROJECTNAME@@_view
+-(id)initWithFrame:(CGRect)frame {
+if((self = [super initWithFrame:frame])) {
+self.backgroundColor = [UIColor redColor];
+
+}
+return self;
+}
+-(void)layoutSubviews {
+//Add any subviews
+}
+@end
+file 7 Makefile
+include theos/makefiles/common.mk
+BUNDLE_NAME = @@PROJECTNAME@@
+@@PROJECTNAME@@_FILES = @@PROJECTNAME@@.mm
+@@PROJECTNAME@@_INSTALL_PATH = /Library/SwitcherLoader/Plugins
+@@PROJECTNAME@@_FRAMEWORKS = UIKit
+include $(THEOS_MAKE_PATH)/bundle.mk
+
+file 9 control
+Package: @@PACKAGENAME@@
+Name: @@FULLPROJECTNAME@@
+Depends: com.fr0zensun.switcherloader
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome SwitcherLoader plugin
+Maintainer: @@USER@@
+Author: @@USER@@
+Section: Tweaks
+
